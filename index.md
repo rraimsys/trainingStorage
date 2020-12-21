@@ -202,3 +202,66 @@ Next Topics
  - [ ] ialloc, super block list 
  - [ ] file systems 
  - [ ] examples 
+ 
+ 
+ 
+# Super Block free Inode List !  
+  
+
+![enter image description here](https://www.cems.uwe.ac.uk/~irjohnso/coursenotes/lrc/internals/images/fs4.gif)  
+    
+Until there are no more _free inode on disk_ *or* _super block free inode list is empty_
+
+_What happens when a file is closed_?
+    - _have newly free inode number_ (f)
+    - _have older remembered inode number in the superblock free inode list_ (r)
+    -  if ( f < r ) { r becomes f } ( only if the superblock free inode list is full ) 
+    - increment free inodes counter, check for superblock is _not_ locked
+    - store f in super block free inode list ( only if superblock free inode list is not full )
+    - 
+
+
+# On change of content in files 
+  
+![enter image description here](https://www.cems.uwe.ac.uk/~irjohnso/coursenotes/lrc/internals/images/fs2.gif)
+_Quiz_ : Why cannot one can use simply a bit to donate if the data block is free or not, but one can donate if an inode is free?
+
+- This is _mkfs_ does or making a file system on a disk. ^^  [ Why 172, 171 block # adjacent ] 
+-  See left most entries in each of the linked list node **link block**  ^^
+- _Number of block numbers keep getting reduced as the machine runs and process keep writing data_
+- Copy the content, fully of 230 into the upper list _super block free data list_, makes 230 as free
+- **alloc** I/P - file system number , O/P is a buffer (getblk - first time in buffer cache )
+- get a block from the super block free list, if needed push list up ( don't forget to lock the list ) and unlock, hence need to wake up the tasks ( bread ) 
+- mark the super block as modified and decrease the free number of free blocks 
+
+## On Deletion of files   
+
+- block # 424 is marked for delete, this is a data block 
+- if the super block free data block list can contain block # 424 [ has space for it ], just insert
+- if the super block free data block list does not have any more room, the 424 block # now points to the older super block free data block list [ see the left most entry ] 
+
+  _Quiz_ What does defragmentation does?  
+  Rearranges the super block free data block block list.
+
+## On Scheduling of Requests 
+  
+![enter image description here](https://i.ibb.co/Wx0VNJV/req1.png)
+
+Data Block tuples < track #, block # > 
+![enter image description here](https://i.ibb.co/0CJZNH1/reeq2.png)
+
+![enter image description here](https://i.ibb.co/RPrZ2XR/req3.png)
+
+https://man7.org/linux/man-pages/man2/posix_fadvise.2.html
+
+https://en.wikipedia.org/wiki/Elevator_algorithm
+
+http://faculty.salina.k-state.edu/tim/ossg/File_sys/disk_scheduling.html
+
+http://www.cs.iit.edu/~cs561/cs450/disksched/disksched.html
+
+_Quiz_ Does one need such rules in case of non revolving drives?
+
+
+
+
